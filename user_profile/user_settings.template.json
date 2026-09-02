@@ -1,0 +1,15 @@
+{
+  "full_name": "[Ditt Navn Her]",
+  "age": 25,
+  "current_title": "[Din Stillingstittel / Yrke]",
+  "target_category": "IT & Utvikling",
+  "tone_of_voice": "Ung & direkte, uformell, korte setninger, null konsulentspråk",
+  "personality_traits": [
+    "Lærevillig & nysgjerrig",
+    "Strukturert & ansvarsfull",
+    "Lagspiller"
+  ],
+  "cv_experiences": "- Erfaring 1: [Beskrivelse]\n- Erfaring 2: [Beskrivelse]",
+  "custom_search_keywords": ["utvikler", "fullstack", "frontend", "backend"],
+  "location_filter": "Oslo og omegn"
+}

@@ -1,0 +1,48 @@
+# Python & Virtuelle Miljøer
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Node & Frontend Build Output
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Miljøvariabler & API-Nøkler (Konfidensielt)
+.env
+.env.local
+.env.*
+
+# Personlig & GDPR-sensitiv informasjon (100% Skjules fra Git/GitHub)
+user_profile/user_settings.json
+user_profile/master_profile.md
+user_profile/*.md
+!user_profile/master_profile.template.md
+!user_profile/user_settings.template.json
+soknadsbrev/
+Historiske søknader/
+arkiv/
+cvMarkus.md
+markus_master_profil.md
+*.pdf
+*.docx
+*.html
+
+# Generert datalager & rapporter
+relevante_stillinger_database.json
+relevante_stillinger.md
+
+# macOS & OS-filer
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE & AI Assistant Mapper
+.gemini/
+.idea/
+.vscode/
