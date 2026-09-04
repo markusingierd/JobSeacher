@@ -23,19 +23,28 @@ EXCLUDE_KEYWORDS = [
     "avdelingsleder", "cto", "arkitekt - senior", "head of"
 ]
 
-# FINN.no søke-URLer (IT, Utvikling, Frontend/Backend, Kotlin, React, Python, AI, IT-drift i Oslo og omegn)
+# FINN.no søke-URLer (IT, Utvikling, Junior/Nyutdannet, Graduate, Trainee, Internship, Frontend/Backend, Kotlin, React, Python, AI, IT-drift i Oslo og omegn)
 FINN_SEARCH_URLS = [
     "https://www.finn.no/job/fulltime/search.html?q=utvikler&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=systemutvikler&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=fullstack&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=frontend&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=backend&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=junior&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=juniorutvikler&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=nyutdannet&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=graduate&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=trainee&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=internship&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=intern&location=1.20001.20061",
+    "https://www.finn.no/job/fulltime/search.html?q=f%C3%B8rstekonsulent&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=kotlin&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=react&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=typescript&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=python&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=ai&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?q=driftstekniker&location=1.20001.20061",
+    "https://www.finn.no/job/search.html?q=internship&location=1.20001.20061",
     "https://www.finn.no/job/fulltime/search.html?occupations=0.23"
 ]
 

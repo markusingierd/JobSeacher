@@ -68,7 +68,19 @@ KEYWORDS_WEIGHTS = {
     "ledelse": 6,
     "koordinator": 6,
     "smidig": 5,
-    "tverrfaglig": 5
+    "tverrfaglig": 5,
+    
+    # Karrierenivå (Entry-level & Junior bonus for nyutdannede)
+    "junior": 15,
+    "nyutdannet": 15,
+    "graduate": 15,
+    "internship": 12,
+    "intern": 10,
+    "trainee": 12,
+    "entry level": 12,
+    "førstekonsulent": 10,
+    "startstilling": 10,
+    "sommerjobb": 8
 }
 
 def load_database():
@@ -162,8 +174,8 @@ def check_applied_status(db):
                 is_applied = True
                 applied_file_name = filename
                 break
-            # Sjekk om bedriftsnavn eller nøkkelord i filnavnet matcher
-            company_words = [w for w in company.split() if len(w) >= 4]
+            # Sjekk om bedriftsnavn eller nøkkelord i filnavnet matcher (f.eks. NRK, UDI, NAV, VY, DNB)
+            company_words = [w for w in company.split() if len(w) >= 3]
             if any(w in fn_low for w in company_words) and company in content:
                 is_applied = True
                 applied_file_name = filename
