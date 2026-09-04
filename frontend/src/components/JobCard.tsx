@@ -79,6 +79,17 @@ export const JobCard: React.FC<JobCardProps> = ({
             <strong className="text-blue-400 font-semibold">💡 Vipps-Krok:</strong> {job.company_hook_insight}
           </div>
         )}
+
+        {/* AI-Restriksjon / Kontrolltest Advarsel */}
+        {job.has_ai_restriction && (
+          <div className="text-xs text-amber-300 mt-2 bg-amber-950/40 p-2.5 rounded-lg border border-amber-800/60 flex items-start gap-2">
+            <span className="text-amber-400 text-sm leading-none">⚠️</span>
+            <div>
+              <strong className="text-amber-300 font-semibold">AI-Restriksjon / Kontrolltest:</strong>
+              <p className="text-amber-200/90 mt-0.5">{job.ai_restriction_details || 'Annonsen ber om at AI ikke benyttes eller inneholder en kontroll-instruks.'}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Handlingsknapper i bunn */}

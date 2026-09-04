@@ -67,6 +67,8 @@ class JobModel(BaseModel):
     match_percentage: int = 0
     match_analysis: Optional[str] = ""
     company_hook_insight: Optional[str] = ""
+    has_ai_restriction: Optional[bool] = False
+    ai_restriction_details: Optional[str] = ""
     application_status: Optional[str] = "not_applied"
     applied_file: Optional[str] = ""
     description_text: Optional[str] = ""

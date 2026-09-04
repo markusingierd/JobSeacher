@@ -14,6 +14,8 @@ export interface Job {
   match_percentage: number;
   match_analysis?: string;
   company_hook_insight?: string;
+  has_ai_restriction?: boolean;
+  ai_restriction_details?: string;
   application_status?: 'not_applied' | 'draft' | 'applied' | 'rejected' | 'interview' | string;
   applied_file?: string;
   description_text?: string;

@@ -120,6 +120,23 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
             </div>
           )}
 
+          {/* AI-Restriksjon / Kontrolltest Advarsel Banner */}
+          {job.has_ai_restriction && (
+            <div className="bg-amber-950/50 border border-amber-800/60 rounded-xl p-3.5 text-xs text-amber-200 flex items-start gap-2.5">
+              <span className="text-amber-400 text-base leading-none">⚠️</span>
+              <div>
+                <strong className="text-amber-300 block font-semibold mb-0.5">
+                  AI-RESTRISJON / KONTROLLTEST OPPDAGET I UTLYSNINGEN!
+                </strong>
+                <p className="text-amber-200/90 leading-relaxed">
+                  {job.ai_restriction_details || 'Arbeidsgiver har lagt inn et ønske/forbud mot AI-genererte søknader eller en kontroll-instruks i annonsen.'}
+                  <br />
+                  <span className="font-semibold text-amber-300">Tips:</span> Les over teksten selv og gjør små tilpasninger slik at den fremstår 100% din egen.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Valgfritt tilleggsnotat */}
           {!contentMarkdown && (
             <div>

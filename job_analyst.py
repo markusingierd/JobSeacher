@@ -266,6 +266,44 @@ def generate_markdown(db):
     with open(OUTPUT_MD, "w", encoding="utf-8") as f:
         f.write("\n".join(md))
 
+def detect_ai_restrictions(description_text: str) -> dict:
+    if not description_text:
+        return {"has_ai_restriction": False, "details": ""}
+    
+    text_low = description_text.lower()
+    
+    patterns = [
+        ("ikke bruk ai", "Arbeidsgiver ber om at AI/KI ikke skal benyttes i søknaden."),
+        ("ikke bruk ki", "Arbeidsgiver ber om at AI/KI ikke skal benyttes i søknaden."),
+        ("uten chatgpt", "Arbeidsgiver ber om at ChatGPT ikke skal brukes."),
+        ("ingen chatgpt", "Arbeidsgiver ber om at ChatGPT ikke skal brukes."),
+        ("uten ai", "Arbeidsgiver ber om søknad uten AI-hjelp."),
+        ("uten ki", "Arbeidsgiver ber om søknad uten KI-hjelp."),
+        ("ki-generert", "Annonsen har regler om KI-generert innhold."),
+        ("ai-generert", "Annonsen har regler om AI-generert innhold."),
+        ("egenkomponert", "Arbeidsgiver krever en egenkomponert søknad."),
+        ("kontrollord", "Annonsen nevner et kontrollord du må inkludere."),
+        ("hemmelig ord", "Annonsen ber om et hemmelig ord i teksten."),
+        ("passord", "Annonsen ber om et passord/kontrollord i teksten."),
+        ("skriv ordet", "Annonsen ber deg inkludere et spesifikt ord for å sjekke om du har lest utlysningen."),
+        ("inkluder ordet", "Annonsen ber deg inkludere et spesifikt ord for å sjekke om du har lest utlysningen."),
+        ("sjekk at du har lest", "Annonsen inneholder en kontroll-instruks for å verifisere at utlysningen er lest.")
+    ]
+    
+    found_warnings = []
+    for pattern, warning_msg in patterns:
+        if pattern in text_low:
+            found_warnings.append(warning_msg)
+            
+    if found_warnings:
+        unique_warnings = list(dict.fromkeys(found_warnings))
+        return {
+            "has_ai_restriction": True,
+            "details": " • ".join(unique_warnings)
+        }
+    
+    return {"has_ai_restriction": False, "details": ""}
+
 def run_analyst():
     print("🧠 Starter Job Analyst for Markus (v2.0 Universal Engine)...")
     db = load_database()
@@ -278,10 +316,13 @@ def run_analyst():
         
         match_pct, analysis = calculate_match(job.get("title", ""), job.get("description_text", ""))
         hook_insight = extract_company_hook_insight(job.get("company", ""), job.get("title", ""), job.get("description_text", ""))
+        ai_restriction_info = detect_ai_restrictions(job.get("description_text", ""))
         
         job["match_percentage"] = match_pct
         job["match_analysis"] = analysis
         job["company_hook_insight"] = hook_insight
+        job["has_ai_restriction"] = ai_restriction_info["has_ai_restriction"]
+        job["ai_restriction_details"] = ai_restriction_info["details"]
         job["status"] = "analyzed"
         updated_count += 1
 
