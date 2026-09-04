@@ -1,6 +1,7 @@
 import { Job, UserProfile, GenerateApplicationRequest, ApplicationResponse, ExportDocxRequest } from '../types/job';
 
-const API_BASE = 'http://localhost:8000/api';
+// Kobler direkte mot Python FastAPI backend på 127.0.0.1 (IPv4) for å unngå IPv6 localhost-mismatch
+const API_BASE = 'http://127.0.0.1:8000/api';
 
 export async function fetchJobs(params?: {
   q?: string;

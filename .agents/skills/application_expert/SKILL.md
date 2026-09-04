@@ -41,14 +41,19 @@ Denne skillen er spesialdesignet for å skrive naturlige, engasjerende og alders
 
 ---
 
-## ⚙️ 5. ARBEIDSFLYT OG MANUELL GIT-KONTROLL
-1. **To-trinns DOCX-generering:**
+## ⚙️ 5. ARBEIDSFLYT, LOKAL TESTING OG STRENG GIT-KONTROLL
+1. **Tolke & Forklare Først:**
+   - Agenten skal ALLTID tolke Markus sin forespørsel og forklare det tilbake før noen kildekode endres.
+   - Agenten skal ALLTID få eksplisitt bekreftelse før kildekode endres eller kommandoer kjøres.
+2. **Lokal Testing Først (INGEN Automatisk Git Push):**
+   - Alle kildekodeendringer forblir 100 % LOKALE på Markus sin Mac.
+   - Agenten skal ALDRI automatisk kjøre `git push` til GitHub etter kodeendringer.
+   - Markus skal ALLTID få teste og sjekke appen lokalt først.
+3. **Egen Separat Bekreftelse for Git Push:**
+   - Agenten skal KUN kjøre `git push` når Markus har testet lokalt, bekreftet at koden fungerer, og gir en egen eksplisitt kommando (f.eks. *"push til git"*, *"push endringer"*).
+4. **To-trinns DOCX-generering:**
    - Teksten tilpasses og ferdigstilles i chatten først.
    - `.docx`-fil i `soknadsbrev/` opprettes KUN når Markus skriver *"lag docx"*, *"opprett docx"* eller gir eksplisitt klarsignal.
-2. **DMP / Skjema-instruksjoner:**
-   - Sjekk alltid om utlysningen ber kandidaten om *ikke* å laste opp søknadsbrev. Informer Markus straks om dette og foreslå skjemasvar i stedet.
-3. **Manuell Git-Push:**
-   - Utfør KUN `git push` når Markus eksplisitt skriver **«push til git»** eller tilsvarende.
 
 ---
 

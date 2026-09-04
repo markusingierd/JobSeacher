@@ -26,18 +26,28 @@ fi
 # Sjekk at node_modules finnes i frontend
 if [ ! -d "frontend/node_modules" ]; then
     echo "📦 Installerer frontend npm-pakker..."
-    cd frontend && npm install && cd ..
+    cd frontend && npm install && cd "$DIR"
 fi
 
 echo "⚙️ Starter Python FastAPI Backend (port 8000)..."
-.venv/bin/uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
+.venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8000 > backend.log 2>&1 &
 BACKEND_PID=$!
 
+echo "⏳ Venter på at FastAPI backend skal bli 100% klar på port 8000..."
+while ! curl -s http://127.0.0.1:8000/ > /dev/null; do
+    sleep 0.5
+done
+echo "✅ FastAPI Backend er 100% klar!"
+
 echo "🎨 Starter TypeScript React Frontend (port 3000)..."
-cd frontend
-npm run dev -- --host 0.0.0.0 --port 3000 &
+(cd frontend && npm run dev -- --host 127.0.0.1 --port 3000) > frontend.log 2>&1 &
 FRONTEND_PID=$!
-cd "$DIR"
+
+echo "⏳ Venter på at Frontend skal bli 100% klar på port 3000..."
+while ! curl -s http://127.0.0.1:3000/ > /dev/null; do
+    sleep 0.5
+done
+echo "✅ Frontend er 100% klar!"
 
 # Rydd opp prosesser kun dersom brukeren trykker Ctrl+C (SIGINT/SIGTERM)
 cleanup() {
@@ -52,16 +62,15 @@ cleanup() {
 
 trap cleanup INT TERM
 
-# Vent 3 sekunder slik at både FastAPI og Vite rekker å starte helt opp
-sleep 3
-echo "🌐 Åpner http://localhost:3000 i nettleseren..."
-open "http://localhost:3000"
+echo "🌐 Åpner http://127.0.0.1:3000 i nettleseren..."
+open "http://127.0.0.1:3000"
 
 echo ""
 echo "=================================================="
 echo "✨ FinnJobScout UI Kjører!"
-echo "   - Dashboard: http://localhost:3000"
-echo "   - REST API:  http://localhost:8000"
+echo "   - Dashboard: http://127.0.0.1:3000"
+echo "   - REST API:  http://127.0.0.1:8000"
+echo "   - Loggfiler: backend.log og frontend.log"
 echo ""
 echo "💡 Slik stopper du appen:"
 echo "   • Trykk Ctrl+C i dette terminalvinduet"

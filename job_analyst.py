@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-Job Analyst for Markus Hysvær Ingierd
--------------------------------------
-Leser relevante_stillinger_database.json og markus_master_profil.md.
-Beregner match-prosent lokalt basert på nøkkelordvekting og genererer
-en oppdatert, strukturert relevante_stillinger.md.
+Job Analyst for Markus Hysvær Ingierd (v2.0 Universal Match Engine)
+------------------------------------------------------------------
+Leser relevante_stillinger_database.json og beregner en universell,
+objektiv match-prosent for ALLE stillinger på FINN.no basert på:
+1. Karrierenivå (Junior/Graduate/Nyutdannet boost)
+2. Fagfelt & Utviklerrolle (Software, Web, Mobil, Drift)
+3. Spesifikk Tek-stakk (Kotlin, React, Next.js, Python, TypeScript, SQL osv.)
 """
 
 import json
@@ -16,78 +18,29 @@ DB_FILE = BASE_DIR / "relevante_stillinger_database.json"
 PROFILE_FILE = BASE_DIR / "markus_master_profil.md"
 OUTPUT_MD = BASE_DIR / "relevante_stillinger.md"
 
-# Nøkkelord-vektlegging for match-beregning (basert på cvMarkus.md)
-KEYWORDS_WEIGHTS = {
-    # Primære tekniske ferdigheter & rammeverk (Høy vekt)
-    "kotlin": 15,
-    "android": 15,
-    "react": 12,
-    "next.js": 12,
-    "typescript": 12,
-    "javascript": 10,
-    "js": 8,
-    "python": 10,
-    "ai": 10,
-    "ki": 10,
-    "agenter": 10,
-    "firebase": 12,
-    "supabase": 10,
-    "sql": 10,
-    "java": 10,
-    "mobile": 10,
-    "mobil": 10,
-    "jetpack compose": 12,
-    "mapbox": 10,
-    
-    # Utviklingskonsepter & arkitektur
-    "fullstack": 10,
-    "frontend": 10,
-    "backend": 10,
-    "systemutvikler": 10,
-    "programvareutvikler": 10,
-    "api": 8,
-    "git": 6,
-    "rest": 6,
-    "ui": 6,
-    "ux": 6,
-    "datavisualisering": 8,
-    "komponentbasert": 6,
-    
-    # Driftsteknisk & praktisk feilsøking (Ny fra oppdatert CV)
-    "driftstekniker": 10,
-    "drift": 8,
-    "feilsøking": 8,
-    "vedlikehold": 6,
-    "automasjon": 8,
-    "systemansvar": 8,
-    
-    # Sosiale ferdigheter, prosjektstyring & verv
-    "team": 6,
-    "samarbeid": 6,
-    "frivillig": 8,
-    "ledelse": 6,
-    "koordinator": 6,
-    "smidig": 5,
-    "tverrfaglig": 5,
-    
-    # Karrierenivå (Entry-level & Junior bonus for nyutdannede)
-    "junior": 15,
-    "nyutdannet": 15,
-    "graduate": 15,
-    "internship": 12,
-    "intern": 10,
-    "trainee": 12,
-    "entry level": 12,
-    "førstekonsulent": 10,
-    "startstilling": 10,
-    "sommerjobb": 8
-}
+# Kilde-prosjekt database sti for 1-veis fletting
+SOURCE_JOBSKNADER_DB = Path("/Users/markus/privatKoding/jobsknader/relevante_stillinger_database.json")
 
 def load_database():
+    db = {}
     if DB_FILE.exists():
-        with open(DB_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+        try:
+            with open(DB_FILE, "r", encoding="utf-8") as f:
+                db = json.load(f)
+        except Exception:
+            pass
+
+    if SOURCE_JOBSKNADER_DB.exists():
+        try:
+            with open(SOURCE_JOBSKNADER_DB, "r", encoding="utf-8") as f:
+                source_db = json.load(f)
+                for job_id, job_data in source_db.items():
+                    if job_id not in db:
+                        db[job_id] = job_data
+        except Exception as e:
+            print(f"[!] Kunne ikke flette kilde-database: {e}")
+
+    return db
 
 def save_database(db):
     with open(DB_FILE, "w", encoding="utf-8") as f:
@@ -96,7 +49,6 @@ def save_database(db):
 def extract_company_hook_insight(company_name, job_title, description_text):
     text = (company_name + " " + job_title + " " + description_text).lower()
     
-    # Ekstraher konkrete team- og kultur-nøkkelsetninger direkte fra FINN-teksten
     team_focus = []
     if "salgsløsning" in text or "kundereise" in text:
         team_focus.append("de digitale salgsløsningene og hele kundereisen")
@@ -126,27 +78,75 @@ def extract_company_hook_insight(company_name, job_title, description_text):
     return base_hook
 
 def calculate_match(job_title, description_text):
+    """
+    UNIVERSELL 3-PILLER MATCH ALGORITME v2
+    ---------------------------------------
+    1. Karrierenivå-match (Maks 35p)
+    2. Fagfelt & Utviklerrolle (Maks 35p)
+    3. Spesifikk Tek-Stakk (Maks 30p)
+    """
     text = (job_title + " " + description_text).lower()
-    score = 0
-    max_possible = 100
-    matched_skills = []
+    title_low = job_title.lower()
 
-    for kw, weight in KEYWORDS_WEIGHTS.items():
-        if kw in text:
-            score += weight
-            matched_skills.append(kw.capitalize())
+    # 1. KARRIERENIVÅ-MATCH (Maks 35 poeng)
+    is_junior_grad = any(k in text for k in [
+        "junior", "graduate", "nyutdannet", "trainee", "internship", 
+        "intern", "startstilling", "førstekonsulent", "sommerjobb", "entry level"
+    ])
+    is_senior_lead = any(k in text for k in [
+        "senior", "lead", "principal", "direktør", "avdelingsleder", "cto", "head of"
+    ])
 
-    # Normaliser score til en prosent (maks 100%)
-    match_pct = min(100, int((score / max_possible) * 100))
+    if is_junior_grad:
+        level_score = 35
+    elif not is_senior_lead:
+        level_score = 25
+    else:
+        level_score = 5
+
+    # 2. FAGFELT & UTVIKLERROLLE (Maks 35 poeng)
+    is_core_dev_title = any(k in title_low for k in [
+        "utvikler", "developer", "software", "systemutvikler", "fullstack", 
+        "frontend", "backend", "driftstekniker", "programmerer", "ingeniør", "it"
+    ])
     
-    # Skap en kort analyse
+    domain_keywords = [
+        "utvikler", "systemutvikler", "programvareutvikler", "fullstack", 
+        "frontend", "backend", "programmering", "it-utvikler", "bachelor", 
+        "sky", "cloud", "mobil", "mobile", "applikasjon", "driftstekniker", 
+        "drift", "feilsøking", "systemarkitektur", "web", "it", "kode", "koding"
+    ]
+    domain_matches = [kw for kw in domain_keywords if kw in text]
+    
+    if is_core_dev_title:
+        domain_score = 35
+    else:
+        domain_score = min(35, len(domain_matches) * 10)
+
+    # 3. SPESIFIKK TEK-STAKK & KOMPETANSE (Maks 30 poeng)
+    tech_keywords = [
+        "kotlin", "react", "next.js", "typescript", "javascript", "python", 
+        "android", "java", "sql", "firebase", "supabase", "mapbox", 
+        "jetpack compose", "git", "rest", "api", "ui", "ux", "agenter", 
+        "ai", "ki", "smidig", "tverrfaglig", "automasjon", "feilsøking"
+    ]
+    matched_skills = [kw.capitalize() for kw in tech_keywords if kw in text]
+    
+    if is_junior_grad and is_core_dev_title:
+        tech_score = max(15, min(30, len(matched_skills) * 6))
+    else:
+        tech_score = min(30, len(matched_skills) * 6)
+
+    # TOTAL SCORE (Maks 100%)
+    total_match = min(100, level_score + domain_score + tech_score)
+
     unique_matches = list(dict.fromkeys(matched_skills))[:5]
     if unique_matches:
         analysis = f"Matchende nøkkelord: {', '.join(unique_matches)}"
     else:
-        analysis = "Generell IT/Utvikler-stilling"
+        analysis = "IT/Utvikler-stilling"
 
-    return match_pct, analysis
+    return total_match, analysis
 
 def check_applied_status(db):
     soknadsbrev_dir = BASE_DIR / "soknadsbrev"
@@ -167,14 +167,12 @@ def check_applied_status(db):
         is_applied = False
         applied_file_name = ""
         
-        # Sjekk om stillings-ID, URL eller unikt bedriftsnavn finnes i et søknadsbrev
         for filename, content in applied_files.items():
             fn_low = filename.lower()
             if (job_id in content) or (job_url and job_url in content):
                 is_applied = True
                 applied_file_name = filename
                 break
-            # Sjekk om bedriftsnavn eller nøkkelord i filnavnet matcher (f.eks. NRK, UDI, NAV, VY, DNB)
             company_words = [w for w in company.split() if len(w) >= 3]
             if any(w in fn_low for w in company_words) and company in content:
                 is_applied = True
@@ -185,7 +183,8 @@ def check_applied_status(db):
             job["application_status"] = "applied"
             job["applied_file"] = f"soknadsbrev/{applied_file_name}" if applied_file_name else job.get("applied_file", "")
         else:
-            job["application_status"] = "not_applied"
+            if job.get("application_status") != "draft":
+                job["application_status"] = "not_applied"
 
 def get_user_info():
     profile_paths = [
@@ -221,7 +220,6 @@ def generate_markdown(db):
         else:
             unapplied_jobs.append(job)
 
-    # Sorter stillinger etter match-prosent (synkende)
     unapplied_jobs.sort(key=lambda x: x.get("match_percentage", 0), reverse=True)
     applied_jobs.sort(key=lambda x: x.get("match_percentage", 0), reverse=True)
 
@@ -231,7 +229,7 @@ def generate_markdown(db):
     md = []
     md.append(f"# 🎯 Relevante Stillinger for {user_name}")
     md.append(f"\n*Sist oppdatert: {now_str}*\n")
-    md.append("Dette dokumentet oppdateres automatisk av `job_analyst.py`. Stillinger du allerede har skrevet søknad til blir automatisk merket som ✅ Søkt for å unngå dubletter.\n")
+    md.append("Dette dokumentet oppdateres automatisk av `job_analyst.py`.\n")
     
     md.append("---")
     md.append("\n## 🌟 Aktuelle Stillinger – IKKE SØKT ENNÅ (Sortert etter Match %)\n")
@@ -265,46 +263,12 @@ def generate_markdown(db):
             file_link = f"[{Path(app_file).name}]({app_file})" if app_file else "Opprettet"
             md.append(f"| **{pct}%** | {title} | {company} | {deadline} | {file_link} | [FINN]({url}) |")
 
-    md.append("\n---")
-    md.append("\n## 🔍 Detaljert Match-Analyse for Nye Stillinger\n")
-
-    for job in unapplied_jobs:
-        pct = job.get("match_percentage", 0)
-        if pct == 0:
-            continue
-        title = job.get("title", "Ukjent")
-        company = job.get("company", "Ukjent")
-        url = job.get("url", "#")
-        analysis = job.get("match_analysis", "Ingen analyse tilgjengelig.")
-        reason = job.get("reason", "")
-        exp = job.get("experience_req", "Ukjent")
-        hook = job.get("company_hook_insight", "")
-
-        md.append(f"### [{title}]({url}) - {company} ({pct}% Match)")
-        md.append(f"* **Sted:** {job.get('location', 'Ukjent')} | **Frist:** {job.get('application_deadline', 'Ukjent')} | **Erfaringskrav:** {exp}")
-        md.append(f"* **Analyse:** {analysis}")
-        if hook:
-            md.append(f"* **Vipps-Krok Forslag:** {hook}")
-        if reason:
-            md.append(f"* **Merk:** {reason}")
-        md.append("")
-
-    if excluded_jobs:
-        md.append("---")
-        md.append("\n## 🚫 Filtrerte/Ekskluderte Stillinger\n")
-        md.append(f"Totalt {len(excluded_jobs)} stilling(er) ble ekskludert (f.eks. på grunn av Senior/Leder-krav).\n")
-        for job in excluded_jobs[:10]:  # Viser topp 10 ekskluderte
-            md.append(f"- **{job.get('title')}** ({job.get('company')}): {job.get('reason')}")
-
     with open(OUTPUT_MD, "w", encoding="utf-8") as f:
         f.write("\n".join(md))
 
-    print(f"[+] Genererte oppdatert {OUTPUT_MD.name} med {len(unapplied_jobs)} nye stillinger og {len(applied_jobs)} søkte stillinger.")
-
 def run_analyst():
-    print("🧠 Starter Job Analyst for Markus...")
+    print("🧠 Starter Job Analyst for Markus (v2.0 Universal Engine)...")
     db = load_database()
-    
     check_applied_status(db)
     
     updated_count = 0
@@ -323,7 +287,7 @@ def run_analyst():
 
     save_database(db)
     generate_markdown(db)
-    print(f"✨ Analyst ferdig: Analyserte {updated_count} stillinger.")
+    print(f"✨ Analyst ferdig: Re-analyserte {updated_count} stillinger med universell formel.")
 
 if __name__ == "__main__":
     run_analyst()
