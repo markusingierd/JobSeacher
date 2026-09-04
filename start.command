@@ -37,8 +37,9 @@ echo "🎨 Starter TypeScript React Frontend (port 3000)..."
 cd frontend
 npm run dev -- --host 0.0.0.0 --port 3000 &
 FRONTEND_PID=$!
+cd "$DIR"
 
-# Rydd opp prosesser uansett hvordan terminalvinduet lukkes (Ctrl+C, Exit, Steng vindu)
+# Rydd opp prosesser kun dersom brukeren trykker Ctrl+C (SIGINT/SIGTERM)
 cleanup() {
     echo ""
     echo "🛑 Stopper FinnJobScout..."
@@ -46,12 +47,13 @@ cleanup() {
     lsof -ti:8000 | xargs kill -9 2>/dev/null
     lsof -ti:3000 | xargs kill -9 2>/dev/null
     echo "✅ Alle servere stoppet!"
+    exit 0
 }
 
-trap cleanup INT TERM EXIT HUP
+trap cleanup INT TERM
 
-# Vent 2 sekunder og åpne nettleseren automatisk
-sleep 2
+# Vent 3 sekunder slik at både FastAPI og Vite rekker å starte helt opp
+sleep 3
 echo "🌐 Åpner http://localhost:3000 i nettleseren..."
 open "http://localhost:3000"
 
@@ -62,7 +64,7 @@ echo "   - Dashboard: http://localhost:3000"
 echo "   - REST API:  http://localhost:8000"
 echo ""
 echo "💡 Slik stopper du appen:"
-echo "   • Trykk Ctrl+C eller lukk dette terminalvinduet"
+echo "   • Trykk Ctrl+C i dette terminalvinduet"
 echo "   • ELLER dobbelklikk på stop.command i Finder!"
 echo "=================================================="
 
