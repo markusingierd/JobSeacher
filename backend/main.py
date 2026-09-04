@@ -28,6 +28,7 @@ import finn_scout
 import job_analyst
 import profile_manager
 import ai_generator
+import sync_upstream
 
 app = FastAPI(
     title="FinnJobScout API",
@@ -127,7 +128,9 @@ def read_root():
             "/api/jobs/scan",
             "/api/jobs/generate-application",
             "/api/jobs/export-docx",
-            "/api/profile"
+            "/api/profile",
+            "/api/sync/check",
+            "/api/sync/pull"
         ]
     }
 
@@ -199,11 +202,18 @@ def update_profile(payload: ProfileModel):
     profile_manager.save_settings(settings)
     return settings
 
+@app.get("/api/sync/check")
+def check_sync():
+    """Sjekker om kilderepositoriet har nye 1-veis oppdateringer."""
+    return sync_upstream.check_upstream_updates()
+
+@app.post("/api/sync/pull")
+def pull_sync():
+    """Henter nye 1-veis oppdateringer trygt fra kilderepositoriet uten å røre kilden."""
+    return sync_upstream.pull_upstream_updates()
+
 @app.post("/api/jobs/generate-application", response_model=ApplicationResponse)
 def generate_application(payload: GenerateApplicationRequest):
-    """
-    Genererer et skreddersydd søknadsutkast ved bruk av Antigravity AI-motoren.
-    """
     db = read_db()
     if payload.job_id not in db:
         raise HTTPException(status_code=404, detail="Stilling ikke funnet")
@@ -214,7 +224,6 @@ def generate_application(payload: GenerateApplicationRequest):
 
     cover_letter_markdown = ai_generator.generate_cover_letter(job, payload.custom_notes or "")
 
-    # Lagre utkast i soknadsbrev/ mappen
     clean_company = "".join(c for c in company if c.isalnum() or c in (" ", "_")).strip().replace(" ", "_")
     draft_file = SOKNADSBREV_DIR / f"Soknad_{clean_company}_{payload.job_id}.md"
     draft_file.write_text(cover_letter_markdown, encoding="utf-8")
